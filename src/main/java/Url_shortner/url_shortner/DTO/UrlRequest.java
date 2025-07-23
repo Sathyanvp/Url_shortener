@@ -1,15 +1,18 @@
 package Url_shortner.url_shortner.DTO;
 
-
-
-
- 
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public class UrlRequest {
 	
-	private String orginalUrl;
-	private String coustomAlais;
-	private String domain;
+
+    @Schema(description = "Original URL to shorten", example = "http://google.com/blog/why-you-should-use-a-url-shortener")
+    private String originalUrl;
+
+    @Schema(description = "Custom alias for shortened URL (optional)", example = "myalias123")
+    private String coustomAlais;
+
+    @Schema(description = "Domain (optional)", example = "lazyurl.com")
+    private String domain;
 	
 
 	public UrlRequest() {
@@ -41,12 +44,12 @@ public class UrlRequest {
 
 
 
-	public String getOrginalUrl() {
-		return orginalUrl;
+	public String getOriginalUrl() {
+		return originalUrl;
 	}
 
-	public void setOrginalUrl(String orginalUrl) {
-		this.orginalUrl = orginalUrl;
+	public void setOriginalUrl(String originalUrl) {
+		this.originalUrl = originalUrl;
 		
 	}
   

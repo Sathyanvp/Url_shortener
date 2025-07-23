@@ -4,13 +4,21 @@ import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 
 
+
+@Schema(description = "Standard API response object containing status, message, and timestamp")
 public class ErrorResponse {
-	
-	private HttpStatus statusCode;
-	private String message;
-	private LocalDateTime timestamp;
+
+    @Schema(description = "HTTP status code", example = "200")
+    private HttpStatus statusCode;
+
+    @Schema(description = "Descriptive message of the response", example = "Short URL created successfully")
+    private String message;
+
+    @Schema(description = "Timestamp when the response was generated", example = "2025-07-23T13:00:00")
+    private LocalDateTime timestamp;
 
     public ErrorResponse() {
 		

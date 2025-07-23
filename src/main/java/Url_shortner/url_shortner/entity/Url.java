@@ -3,6 +3,7 @@ package Url_shortner.url_shortner.entity;
 
 import java.time.LocalDateTime;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,24 +17,31 @@ public class Url {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Schema(description = "Unique ID of the user", example = "1")
     private int id;
 
 	@Column
+	@Schema(description = "The orginal url given by user", example = "http://google.com/blog/why-you-should-use-a-url-shortener")
 	private String originalUrl;
     
 	@Column
+	@Schema(description = "The shorterned url", example = "http://lazyurl.com/abc123")
 	private String shortUrl;
 	
 	@Column
+	@Schema(description = "Custom domain to be used for generating the short URL", example = "lazyurl.com")
 	private String domain;
     
 	@Column(nullable=false)
+	@Schema(description = "The creation timestamp of the short URL", example = "2025-07-23T12:00:00")
 	private LocalDateTime createdAt;
     
 	@Column(nullable=false)
+	@Schema(description = "The expiry timestamp of the short URL", example = "2025-08-23T12:00:00")
 	private LocalDateTime expiryDate;
 	
 	@Column
+	@Schema(description = "Total number of times the short URL has been accessed", example = "7")
     private int clickCount;
 	
 

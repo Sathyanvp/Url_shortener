@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import Url_shortner.url_shortner.DTO.ErrorResponse;
 import Url_shortner.url_shortner.DTO.StatResponse;
+import Url_shortner.url_shortner.DTO.UrlRequest;
 import Url_shortner.url_shortner.entity.Url;
 import Url_shortner.url_shortner.repository.UrlRepository;
 
@@ -39,9 +40,9 @@ public class UrlShorteningService {
 	    return urlValidator.isValid(url);
 	}
 
-	public ResponseEntity<?> convertUrl(String orginalUrl) {
+	public ResponseEntity<?> convertUrl(UrlRequest urlRequest) {
 		 
-		Url urlobj = urlRepository.findByOriginalUrl(orginalUrl);
+		Url urlobj = urlRepository.findByOriginalUrl(urlRequest.getOriginalUrl());
 		if(urlobj != null) {
 			
 			return ResponseEntity
@@ -51,10 +52,14 @@ public class UrlShorteningService {
 		}
 		
 		Url newUrl = new Url();
-	    newUrl.setOriginalUrl(orginalUrl);
+	    newUrl.setOriginalUrl(urlRequest.getOriginalUrl());
 	    newUrl.setCreatedAt(LocalDateTime.now());
 	    newUrl.setExpiryDate(LocalDateTime.now().plusDays(30));
-		String shortCode = convertor.generateShortUrl();
+	    String shortCode = urlRequest.getCoustomAlais();
+	    if (shortCode == null || shortCode.isEmpty()) {
+	        shortCode = convertor.generateShortUrl();
+	    }
+
 	    while(true) {
 	    	if(urlRepository.findByShortUrl(shortCode) == null) { break;}
 	    }
