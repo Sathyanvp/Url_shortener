@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import Url_shortner.url_shortner.DTO.ErrorResponse;
 import Url_shortner.url_shortner.DTO.StatResponse;
 import Url_shortner.url_shortner.DTO.UrlRequest;
 import Url_shortner.url_shortner.entity.Url;
@@ -40,14 +39,12 @@ public class UrlShorteningService {
 	    return urlValidator.isValid(url);
 	}
 
-	public ResponseEntity<?> convertUrl(UrlRequest urlRequest) {
+	public String convertUrl(UrlRequest urlRequest) {
 		 
 		Url urlobj = urlRepository.findByOriginalUrl(urlRequest.getOriginalUrl());
 		if(urlobj != null) {
 			
-			return ResponseEntity
-					.status(HttpStatus.CREATED)
-					.body(shortUrlDomain + "/" + urlobj.getShortUrl());
+			return shortUrlDomain + "/" + urlobj.getShortUrl();
 			
 		}
 		
@@ -67,9 +64,7 @@ public class UrlShorteningService {
 	    newUrl.setShortUrl(shortCode);
 	    urlRepository.save(newUrl); 
 
-	    return ResponseEntity
-	           .status(HttpStatus.CREATED)
-	           .body(shortUrlDomain + "/" + shortCode);
+	    return shortUrlDomain + "/" + shortCode;
 		
 	}
 

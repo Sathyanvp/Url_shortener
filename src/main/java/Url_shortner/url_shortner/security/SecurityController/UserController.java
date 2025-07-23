@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 
@@ -47,13 +48,25 @@ public class UserController {
 	        @ApiResponse(
 	            responseCode = "409",
 	            description = "User already exists or registration failed",
-	            content = @Content(schema = @Schema(implementation = RegisterResponse.class))
-	        ),
+	            content = @Content(schema = @Schema(implementation = RegisterResponse.class),
+	            		examples = @ExampleObject(
+	            	            value = "{\n" +
+	            	                    "  \"status\": \"409\",\n" +
+	            	                    "  \"message\": \"User already exists or registration failed\",\n" +
+	            	                    "  \"timestamp\": \"2025-07-23T18:24:42.880Z\"\n" +
+	            	                    "}")
+	        )),
 	        @ApiResponse(
 		            responseCode = "500",
-		            description = "Unexpected error occurred",
-		            content = @Content(schema = @Schema(implementation = RegisterResponse.class))
-		        )
+		            description = "Internal server error",
+		            content = @Content(schema = @Schema(implementation = RegisterResponse.class),
+		            		examples = @ExampleObject(
+		            	            value = "{\n" +
+		            	                    "  \"status\": \"500\",\n" +
+		            	                    "  \"message\": \"Internal server error\",\n" +
+		            	                    "  \"timestamp\": \"2025-07-23T18:24:42.880Z\"\n" +
+		            	                    "}")
+		        ))
 	    }
 	)
 	public ResponseEntity<RegisterResponse> register(@RequestBody Users user) {
@@ -79,15 +92,45 @@ public class UserController {
 	//Login 
 	
 	@PostMapping("/login")
-	@Operation(summary = "Authenticate user and return JWT token")
-	@ApiResponse(
-	    responseCode = "200",
-	    description = "JWT Token returned on successful login",
-	    content = @Content(
-	        mediaType = "application/json",
-	        schema = @Schema(implementation = LoginResponse.class)
-	    )
-	)
+	@Operation(
+		    summary = "Authenticate user and return JWT token",
+		    description = "login with a username and password and return JWT token",
+		    responses = {
+		    		@ApiResponse(
+		    	    responseCode = "200",
+		    	    description = "JWT Token returned on successful login",
+		    	    content = @Content(
+		    	        mediaType = "application/json",
+		    	        schema = @Schema(implementation = LoginResponse.class)
+		    	    		 
+		    	        )),
+		    	        @ApiResponse(
+		    	            responseCode = "409",
+		    	            description = "User already exists or registration failed",
+		    	            content = @Content(schema = @Schema(implementation = LoginResponse.class),
+		    	            		examples = @ExampleObject(
+		    	            	            value = "{\n" +
+		    	            	                    "  \"status\": \"401\",\n" +
+		    	            	                    "  \"message\": \"Invalid username or password\",\n" +
+		    	            	                    "  \"token\": \"null\"\n" +
+		    	            	                    "}"))),
+		    	        @ApiResponse(
+		    		            responseCode = "500",
+		    		            description = "Internal server error",
+		    		            content = @Content(schema = @Schema(implementation = RegisterResponse.class),
+		    		            		examples = @ExampleObject(
+		    		            	            value = "{\n" +
+		    		            	                    "  \"status\": \"500\",\n" +
+		    		            	                    "  \"message\": \"Internal server error\",\n" +
+		    		            	                    "  \"token\": \"null\"\n" +
+		    		            	                    "}")
+		    		        ))  
+	
+	
+            }
+		    )
+	    
+	
 	public ResponseEntity<LoginResponse> login(@RequestBody Users user) {
 		try {
 	        String token = service.verify(user);

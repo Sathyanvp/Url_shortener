@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import Url_shortner.url_shortner.DTO.ErrorResponse;
 import Url_shortner.url_shortner.DTO.StatResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -57,7 +58,9 @@ public class UrlShorteningController {
 
 		}
 		
-		return service.convertUrl(urlrequest);
+		    return ResponseEntity
+				.status(HttpStatus.CREATED)
+				.body(service.convertUrl(urlrequest));
 	}
 	
 	
@@ -68,8 +71,15 @@ public class UrlShorteningController {
 	    description = "Redirects the user to the original long URL associated with the short URL",
 	    responses = {
 	        @ApiResponse(responseCode = "302", description = "Redirect to original URL"),
-	        @ApiResponse(responseCode = "404", description = "Short URL not found"),
-	        @ApiResponse(responseCode = "410", description = "This URL has expired.")
+	        @ApiResponse(responseCode = "404", description = "Short URL not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+	        @ApiResponse(responseCode = "410", description = "This URL has expired.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class),
+	        examples = @ExampleObject(
+		            value = "{\n" +
+		                    "  \"status\": \"410\",\n" +
+		                    "  \"message\": \"This URL has expired\",\n" +
+		                    "  \"timestamp\": \"2025-07-23T18:24:42.880Z\"\n" +
+		                    "}"
+		        )))
 	    }
 	)
 	public ResponseEntity<?> redirect (@PathVariable String shortUrl){
@@ -84,7 +94,8 @@ public class UrlShorteningController {
 					    .body(errorResponse.toString());
 		}
 		catch(IllegalStateException e) {
-		     return ResponseEntity.status(HttpStatus.GONE).body("This URL has expired.");
+			ErrorResponse errorResponse = new ErrorResponse( HttpStatus.BAD_REQUEST, "URL Is Not Found", LocalDateTime.now());
+		     return ResponseEntity.status(HttpStatus.GONE).body(errorResponse.toString());
 		}
 }
 	
@@ -94,9 +105,16 @@ public class UrlShorteningController {
 	@GetMapping("/stat/{shortUrl}")
 	@Operation(summary = "Get statistics for a short URL")
 	@ApiResponses(value = {
-	    @ApiResponse(responseCode = "201", description = "Statistics retrived successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = StatResponse.class))),
+	    @ApiResponse(responseCode = "200", description = "Statistics retrived successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = StatResponse.class))),
 	    @ApiResponse(responseCode = "404", description = "Short URL not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
-	    @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+	    @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class),
+	    examples = @ExampleObject(
+	            value = "{\n" +
+	                    "  \"status\": \"500\",\n" +
+	                    "  \"message\": \"Internal server error\",\n" +
+	                    "  \"timestamp\": \"2025-07-23T18:24:42.880Z\"\n" +
+	                    "}"
+	        )))
 	})
 	public ResponseEntity<?> showStatistics (@PathVariable String shortUrl){
 		try {
