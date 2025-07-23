@@ -68,13 +68,25 @@ public class UrlShorteningController {
 	    description = "Redirects the user to the original long URL associated with the short URL",
 	    responses = {
 	        @ApiResponse(responseCode = "302", description = "Redirect to original URL"),
-	        @ApiResponse(responseCode = "404", description = "Short URL not found")
+	        @ApiResponse(responseCode = "404", description = "Short URL not found"),
+	        @ApiResponse(responseCode = "410", description = "This URL has expired.")
 	    }
 	)
 	public ResponseEntity<?> redirect (@PathVariable String shortUrl){
+		try {
 		
-		 return service.redirectUrl(shortUrl);
-		 }
+			return service.redirectUrl(shortUrl);
+		}
+		catch(IllegalArgumentException e) {
+			  ErrorResponse errorResponse = new ErrorResponse( HttpStatus.BAD_REQUEST, "URL Is Not Found", LocalDateTime.now());
+			    return ResponseEntity
+					    .status(HttpStatus.BAD_REQUEST)
+					    .body(errorResponse.toString());
+		}
+		catch(IllegalStateException e) {
+		     return ResponseEntity.status(HttpStatus.GONE).body("This URL has expired.");
+		}
+}
 	
 	
 	
@@ -83,10 +95,20 @@ public class UrlShorteningController {
 	@Operation(summary = "Get statistics for a short URL")
 	@ApiResponses(value = {
 	    @ApiResponse(responseCode = "201", description = "Statistics retrived successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = StatResponse.class))),
-	    @ApiResponse(responseCode = "404", description = "Short URL not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+	    @ApiResponse(responseCode = "404", description = "Short URL not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+	    @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
 	})
 	public ResponseEntity<?> showStatistics (@PathVariable String shortUrl){
-		return service.getStatistics(shortUrl);
+		try {
+	        StatResponse response = service.getStatistics(shortUrl);
+	        return ResponseEntity.ok(response);
+	    } catch (IllegalArgumentException e) {
+	        ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND, e.getMessage(), LocalDateTime.now());
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+	    } catch (Exception e) {
+	        ErrorResponse error = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong", LocalDateTime.now());
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+	    }
 		
 	}
 	

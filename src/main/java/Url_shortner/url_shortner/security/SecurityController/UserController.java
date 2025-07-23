@@ -2,11 +2,11 @@ package Url_shortner.url_shortner.security.SecurityController;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import Url_shortner.url_shortner.DTO.ErrorResponse;
 import Url_shortner.url_shortner.security.SecurityDTO.LoginResponse;
 import Url_shortner.url_shortner.security.SecurityDTO.RegisterResponse;
 import Url_shortner.url_shortner.security.securityModel.Users;
@@ -30,6 +30,7 @@ public class UserController {
 	}
 	
     
+	//register
 	
 	@PostMapping("/register")
 	@Operation(
@@ -40,25 +41,42 @@ public class UserController {
 	            responseCode = "201",
 	            description = "User successfully registered",
 	            content = @Content(
-	                mediaType = "application/json",
 	                schema = @Schema(implementation = RegisterResponse.class)
 	            )
 	        ),
 	        @ApiResponse(
-	            responseCode = "400",
-	            description = "Invalid registration request",
-	            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-	        )
+	            responseCode = "409",
+	            description = "User already exists or registration failed",
+	            content = @Content(schema = @Schema(implementation = RegisterResponse.class))
+	        ),
+	        @ApiResponse(
+		            responseCode = "500",
+		            description = "Unexpected error occurred",
+		            content = @Content(schema = @Schema(implementation = RegisterResponse.class))
+		        )
 	    }
 	)
 	public ResponseEntity<RegisterResponse> register(@RequestBody Users user) {
-	    // Assume service call here
-	    return ResponseEntity.status(HttpStatus.CREATED)
-	                         .body(new RegisterResponse("201 CREATED", "Register successful"));
+		try {
+    	    if (!service.isUserExists(user)) {
+    	    	service.register(user);
+    		    return ResponseEntity.status(HttpStatus.CREATED)
+    		            .body(new RegisterResponse("201 CREATED", "User registered successful"));    	}
+    	    else {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                      .body(new RegisterResponse("409 CONFLICT", "User already exists or registration failed"));
+            }
+        } 
+    	catch (Exception e) {
+             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                   .body(new RegisterResponse("500 INTERNAL SERVER ERROR", "Unexpected error occurred"));
+    	}
+    	
 	}
+
 	
 	
-	
+	//Login 
 	
 	@PostMapping("/login")
 	@Operation(summary = "Authenticate user and return JWT token")
@@ -71,9 +89,16 @@ public class UserController {
 	    )
 	)
 	public ResponseEntity<LoginResponse> login(@RequestBody Users user) {
-		 String token = service.verify(user);
-		 LoginResponse response = new LoginResponse("200 OK", "Login successful", token);
-		 return ResponseEntity.ok(response);
+		try {
+	        String token = service.verify(user);
+	        return ResponseEntity.ok(new LoginResponse("200 OK", "Login successful", token));
+	    } catch (BadCredentialsException | UsernameNotFoundException ex) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+	                .body(new LoginResponse("401 UNAUTHORIZED", "Invalid username or password", null));
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body(new LoginResponse("500 INTERNAL SERVER ERROR", "Unexpected error occurred", null));
+	    }
 		
 	}
 

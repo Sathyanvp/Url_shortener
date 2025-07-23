@@ -77,14 +77,13 @@ public class UrlShorteningService {
 		Url redirectUrl = urlRepository.findByShortUrl(shortUrl);
 		
 		if(redirectUrl == null) {
-			ErrorResponse errorResponse = new ErrorResponse( HttpStatus.BAD_REQUEST, "URL Is Not Found", LocalDateTime.now());
-		    return ResponseEntity
-				    .status(HttpStatus.BAD_REQUEST)
-				    .body(errorResponse.toString());
+			throw new IllegalArgumentException("Short url not found");
+			
 		}
 		
 		if (redirectUrl.getExpiryDate().isBefore(LocalDateTime.now())) {
-		      return ResponseEntity.status(HttpStatus.GONE).body("This URL has expired.");
+		      throw new IllegalStateException("This URL has expired.");
+		      
 		    }
 		redirectUrl.setClickCount(redirectUrl
 				.getClickCount() + 1);
@@ -101,27 +100,24 @@ public class UrlShorteningService {
 
 
 
-	public ResponseEntity<?> getStatistics(String shortUrl) {
+	public StatResponse getStatistics(String shortUrl) {
 		Url stat = urlRepository.findByShortUrl(shortUrl);
 
 		if(stat == null) {
-			ErrorResponse errorResponse = new ErrorResponse( HttpStatus.BAD_REQUEST, "URL Is Not Found", LocalDateTime.now());
-		    return ResponseEntity
-				    .status(HttpStatus.BAD_REQUEST)
-				    .body(errorResponse.toString());
+			throw new IllegalArgumentException("Short url not found");
 		    }
-		StatResponse statastics = new StatResponse(
+		
+		
+		return new StatResponse(
 				stat.getOriginalUrl(),
 				stat.getShortUrl(),
 				stat.getCreatedAt(),
 				stat.getExpiryDate(),
 				stat.getClickCount());
-		
-		return ResponseEntity
-				.status(HttpStatus.OK)
-				.body(statastics.toString());
 				
 	}
+	
+	
 	
 	@Scheduled(cron = "0 0 0 * * *") 
 	public void deleteExpiredUrl() {

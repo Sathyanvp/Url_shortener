@@ -29,11 +29,23 @@ public class UserService {
 	}
 	
 	 
-    public Users register (Users user) {
-    	user.setPassword(encoder.encode(user.getPassword()));
-    	return repo.save(user);
+    public Users  register (Users user) {
+    	 
+    	 user.setPassword(encoder.encode(user.getPassword()));
+    	 return repo.save(user);
+    
     }
-
+    
+    
+   public boolean isUserExists(Users user) {
+	   Users isExists = repo.findByUsername(user.getUsername());
+	   if (isExists == null) {
+		   return false;
+		 }
+	    
+	    return true;
+   }
+   
 
 	public String verify(Users user) {
 		Authentication authentication = authmanager.authenticate(
