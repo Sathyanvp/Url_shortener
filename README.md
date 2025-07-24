@@ -61,6 +61,14 @@ Update `application.properties` with:
 
 ----
 
+## 📘 API Documentation (Swagger UI)
+
+The project uses **Swagger UI** for API documentation.
+
+### 🔗 Accessing Swagger UI
+Run the Spring Boot application and navigate to: http://localhost:8080/swagger-ui.html
+
+----
 
 ## 🔐 Security Flow
 
